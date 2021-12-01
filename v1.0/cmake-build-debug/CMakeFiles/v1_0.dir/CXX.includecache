@@ -1,0 +1,58 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/media/winxy/Data/Clion projects/PBS/v1.0/basis_pms.h
+iostream
+-
+fstream
+-
+sstream
+-
+cstdlib
+-
+cmath
+-
+cstring
+-
+queue
+-
+stdio.h
+-
+stdlib.h
+-
+sys/times.h
+-
+unistd.h
+-
+
+/media/winxy/Data/Clion projects/PBS/v1.0/deci.h
+basis_pms.h
+/media/winxy/Data/Clion projects/PBS/v1.0/basis_pms.h
+
+/media/winxy/Data/Clion projects/PBS/v1.0/main.cpp
+basis_pms.h
+/media/winxy/Data/Clion projects/PBS/v1.0/basis_pms.h
+pms.h
+/media/winxy/Data/Clion projects/PBS/v1.0/pms.h
+sstream
+-
+iostream
+-
+
+/media/winxy/Data/Clion projects/PBS/v1.0/pms.h
+cmath
+-
+basis_pms.h
+/media/winxy/Data/Clion projects/PBS/v1.0/basis_pms.h
+deci.h
+/media/winxy/Data/Clion projects/PBS/v1.0/deci.h
+sstream
+-
+algorithm
+-
+
