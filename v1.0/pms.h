@@ -828,23 +828,10 @@ void Satlike::local_search_with_decimation(vector<int> &init_solution, char *inp
 		init(init_solution);
 		for (step = 1; step < max_flips; ++step)
 		{
-			if (hard_unsat_nb == 0 &&  best_soln_feasible == 0)
+			if (hard_unsat_nb == 0)
 			{
-				//cout << "unsat soft stack fill pointer" << softunsat_stack_fill_pointer << endl;
-				if (soft_unsat_weight < top_clause_weight)
-				{
-					softclause_weight_threshold += 0;
-					best_soln_feasible = 1;
-					opt_unsat_weight = soft_unsat_weight;
-					opt_time = get_runtime();
-					for (int v = 1; v <= num_vars; ++v)
-						best_soln[v] = cur_soln[v];
-
-					if (opt_unsat_weight == 0)
-					{
-						return;
-					}
-				}
+                printf("2. is satisfiable\n");
+				return;
 			}
 			if (step % 1000 == 0)
 			{
@@ -943,27 +930,7 @@ bool Satlike::verify_sol()
 				cout << endl;
 				return 0;
 			}
-			else
-			{
-				verify_unsat_weight += org_unit_weight[c] * (clause_true_lit_thres[c] - tem_clause_true_lit_count);
-				/*
-				cout << "c wanning: soft clause " << c << " is not satisfied" << endl;
 
-				cout << "c org clause weight " << org_clause_weight[c] << " " << endl;
-
-				for (j = 0; j < clause_lit_count[c]; ++j)
-				{
-					if (clause_lit[c][j].sense == 0)
-						cout << "-";
-					cout << clause_lit[c][j].var_num << " ";
-				}
-				cout << endl;
-				//cout << "c ";
-				for (j = 0; j < clause_lit_count[c]; ++j)
-					cout << best_soln[clause_lit[c][j].var_num] << " ";
-				cout << endl;*/
-				//return 0;
-			}
 		}
 	}
 
@@ -1011,7 +978,7 @@ void Satlike::increase_weights()
 			if (p->sense != cur_soln[v])
 			{
 				score[v] += h_inc * min(clause_true_lit_thres[c] - sat_count[c], weight);
-				if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
+				if (score[v] > 0 && already_in_goodvar_stack[v] == -1)
 				{
 					already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
 					mypush(v, goodvar_stack);
@@ -1020,7 +987,7 @@ void Satlike::increase_weights()
 			else
 			{
 				score[v] -= h_inc * weight;
-				if (already_in_goodvar_stack[v] != -1 && score[v] + sscore[v] <= 0)
+				if (already_in_goodvar_stack[v] != -1 && score[v] <= 0)
 				{
 					int top_v = mypop(goodvar_stack);
 					goodvar_stack[already_in_goodvar_stack[v]] = top_v;
@@ -1032,53 +999,6 @@ void Satlike::increase_weights()
 	}
 
 	//cout << "now ave hard weight is " << ave_hard_weight << endl; && ave_soft_weight - ave_hard_weight > 400
-	if (soft_unsat_weight >= opt_unsat_weight && ave_soft_weight - ave_hard_weight < 100)
-	{
-		//flag = 1;
-		ave_soft_weight += total_soft_weight / num_sclauses;
-		inc_hard_weight += total_soft_weight / num_sclauses;
-		for (c = 0; c < num_clauses; ++c)
-		{
-			if (org_clause_weight[c] == top_clause_weight)
-				continue;
-
-			unit_weight[c] += org_unit_weight[c];
-
-			if (sat_count[c] < clause_true_lit_thres[c])
-			{
-				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
-				{
-					sscore[v] += org_unit_weight[c];
-					//min(clause_true_lit_thres[c] - sat_count[c], weight);
-					if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
-					{
-						already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
-						mypush(v, goodvar_stack);
-					}
-				}
-			}
-			else if (sat_count[c] == 1)
-			{
-				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
-				{
-					//weight = p->weight;
-					//sscore[v] += org_unit_weight[c];
-					if (p->sense == cur_soln[v])
-					{
-						sscore[v] -= org_unit_weight[c];
-						if (already_in_goodvar_stack[v] != -1 && score[v] + sscore[v] <= 0)
-						{
-							int top_v = mypop(goodvar_stack);
-							goodvar_stack[already_in_goodvar_stack[v]] = top_v;
-							already_in_goodvar_stack[top_v] = already_in_goodvar_stack[v];
-							already_in_goodvar_stack[v] = -1;
-						}
-					}
-				}
-			}
-		}
-	}
-
 	ave_hard_weight += (inc_hard_weight / num_hclauses);
 	inc_hard_weight %= num_hclauses;
 }
