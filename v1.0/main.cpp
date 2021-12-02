@@ -31,7 +31,7 @@ int main()
     srand((unsigned)time(NULL));
     start_timing();
     Satlike s;
-    int cutoff = 30;
+    int cutoff = 300;
     s.cutoff_time = cutoff;
     //cout<<s.cutoff_time<<endl;
     vector<int> init_solution;

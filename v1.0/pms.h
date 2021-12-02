@@ -1005,90 +1005,90 @@ void Satlike::increase_weights()
 
 void Satlike::smooth_weights()
 {
-	int i, clause, v;
-	int weight;
-	if (soft_unsat_weight < opt_unsat_weight && ave_soft_weight > (total_soft_weight / num_sclauses))
-	{
-		ave_soft_weight -= (total_soft_weight / num_sclauses);
-		inc_hard_weight -= (total_soft_weight / num_sclauses);
-		if (inc_hard_weight < 0)
-			inc_hard_weight = 0;
-		for (int c = 0; c < num_clauses; ++c)
-		{
-			if (org_clause_weight[c] == top_clause_weight)
-			{
-				if (unit_weight[c] == 1 && sat_count[c] < clause_true_lit_thres[c])
-					continue;
-
-				unit_weight[c]--;
-				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
-				{
-					weight = p->weight;
-					if (p->sense == cur_soln[v])
-					{
-						if (sat_count[c] - weight < clause_true_lit_thres[c])
-						{
-							score[v] += clause_true_lit_thres[c] - sat_count[c] + weight;
-							if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
-							{
-								already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
-								mypush(v, goodvar_stack);
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				unit_weight[c]--;
-				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
-				{
-					weight = p->weight;
-					if (p->sense == cur_soln[v])
-					{
-						if (sat_count[c] - weight < clause_true_lit_thres[c])
-						{
-							sscore[v] += clause_true_lit_thres[c] - sat_count[c] + weight;
-							if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
-							{
-								already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
-								mypush(v, goodvar_stack);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		for (int c = 0; c < num_clauses; ++c)
-		{
-			if (org_clause_weight[c] == top_clause_weight)
-			{
-				if (unit_weight[c] == 1 && sat_count[c] < clause_true_lit_thres[c])
-					continue;
-
-				unit_weight[c]--;
-				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
-				{
-					weight = p->weight;
-					if (p->sense == cur_soln[v])
-					{
-						if (sat_count[c] - weight < clause_true_lit_thres[c])
-						{
-							score[v] += clause_true_lit_thres[c] - sat_count[c] + weight;
-							if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
-							{
-								already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
-								mypush(v, goodvar_stack);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+//	int i, clause, v;
+//	int weight;
+//	if (soft_unsat_weight < opt_unsat_weight && ave_soft_weight > (total_soft_weight / num_sclauses))
+//	{
+//		ave_soft_weight -= (total_soft_weight / num_sclauses);
+//		inc_hard_weight -= (total_soft_weight / num_sclauses);
+//		if (inc_hard_weight < 0)
+//			inc_hard_weight = 0;
+//		for (int c = 0; c < num_clauses; ++c)
+//		{
+//			if (org_clause_weight[c] == top_clause_weight)
+//			{
+//				if (unit_weight[c] == 1 && sat_count[c] < clause_true_lit_thres[c])
+//					continue;
+//
+//				unit_weight[c]--;
+//				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
+//				{
+//					weight = p->weight;
+//					if (p->sense == cur_soln[v])
+//					{
+//						if (sat_count[c] - weight < clause_true_lit_thres[c])
+//						{
+//							score[v] += clause_true_lit_thres[c] - sat_count[c] + weight;
+//							if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
+//							{
+//								already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
+//								mypush(v, goodvar_stack);
+//							}
+//						}
+//					}
+//				}
+//			}
+//			else
+//			{
+//				unit_weight[c]--;
+//				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
+//				{
+//					weight = p->weight;
+//					if (p->sense == cur_soln[v])
+//					{
+//						if (sat_count[c] - weight < clause_true_lit_thres[c])
+//						{
+//							sscore[v] += clause_true_lit_thres[c] - sat_count[c] + weight;
+//							if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
+//							{
+//								already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
+//								mypush(v, goodvar_stack);
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+//	else
+//	{
+//		for (int c = 0; c < num_clauses; ++c)
+//		{
+//			if (org_clause_weight[c] == top_clause_weight)
+//			{
+//				if (unit_weight[c] == 1 && sat_count[c] < clause_true_lit_thres[c])
+//					continue;
+//
+//				unit_weight[c]--;
+//				for (lit *p = clause_lit[c]; (v = p->var_num) != 0; p++)
+//				{
+//					weight = p->weight;
+//					if (p->sense == cur_soln[v])
+//					{
+//						if (sat_count[c] - weight < clause_true_lit_thres[c])
+//						{
+//							score[v] += clause_true_lit_thres[c] - sat_count[c] + weight;
+//							if (score[v] + sscore[v] > 0 && already_in_goodvar_stack[v] == -1)
+//							{
+//								already_in_goodvar_stack[v] = goodvar_stack_fill_pointer;
+//								mypush(v, goodvar_stack);
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 }
 
 void Satlike::update_clause_weights()
