@@ -1,0 +1,7 @@
+org_clause_weight[c]                    weight of clause c in input file
+clause_true_lit_thres[c]                degree of the clause
+clause_lit_count[c]                     nr of variables in the clause c
+unit_clause[0 ~ unit_clause_count]      those lits which have only one variable
+max_clause_length, min_clause_length    refers to extreme nr of variables in all clauses
+clause_lit[c][i]                        cth clause and ith lit
+var_lit[v][0 ~ var_lit_count[v]]        variable v's ith appearance

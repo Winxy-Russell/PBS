@@ -17,12 +17,12 @@ Satlike::Satlike()
 
 	//size of the instance
 	num_vars = 0;		 //var index from 1 to num_vars
-	num_clauses = 0; //clause index from 0 to num_clauses-1
-	num_hclauses = 0;
-	num_sclauses = 0;
+	num_hclauses = 0; //clause index from 0 to num_clauses-1
 
 	print_time = 240;
 	cutoff_time = 300;
+
+	isSatisfiable = 0;
 }
 
 void Satlike::settings()
@@ -33,7 +33,7 @@ void Satlike::settings()
 	max_non_improve_flip = 10000000;
 
 	large_clause_count_threshold = 0;
-	soft_large_clause_count_threshold = 0;
+
 
 	rdprob = 0.01;
 	hd_count_threshold = 15;
@@ -41,7 +41,6 @@ void Satlike::settings()
 	smooth_probability = 0.01;
 
 	h_inc = 1;
-	softclause_weight_threshold = 1;
 
 	if (num_vars > 2000)
 	{
@@ -55,7 +54,7 @@ void Satlike::settings()
 void Satlike::allocate_memory()
 {
 	int malloc_var_length = num_vars + 10;
-	int malloc_clause_length = num_clauses + 10;
+	int malloc_clause_length = num_hclauses + 10;
 
 	unit_clause = new lit[malloc_clause_length];
 
@@ -66,8 +65,8 @@ void Satlike::allocate_memory()
 	clause_true_lit_thres = new int[malloc_clause_length];
 
 	score = new long long[malloc_var_length];
-	sscore = new long long[malloc_var_length];
-	oscore = new long long[malloc_var_length];
+//	sscore = new long long[malloc_var_length];
+//	oscore = new long long[malloc_var_length];
 	var_neighbor = new int *[malloc_var_length];
 	var_neighbor_count = new int[malloc_var_length];
 	time_stamp = new long long[malloc_var_length];
@@ -80,13 +79,13 @@ void Satlike::allocate_memory()
 	org_unit_weight = new long long[malloc_clause_length];
 	sat_count = new int[malloc_clause_length];
 	sat_var = new int[malloc_clause_length];
-	clause_selected_count = new long long[malloc_clause_length];
-	best_soft_clause = new int[malloc_clause_length];
+//	clause_selected_count = new long long[malloc_clause_length];
+//	best_soft_clause = new int[malloc_clause_length];
 
 	hardunsat_stack = new int[malloc_clause_length];
 	index_in_hardunsat_stack = new int[malloc_clause_length];
-	softunsat_stack = new int[malloc_clause_length];
-	index_in_softunsat_stack = new int[malloc_clause_length];
+//	softunsat_stack = new int[malloc_clause_length];
+//	index_in_softunsat_stack = new int[malloc_clause_length];
 
 	unsatvar_stack = new int[malloc_var_length];
 	index_in_unsatvar_stack = new int[malloc_var_length];
@@ -100,7 +99,7 @@ void Satlike::allocate_memory()
 	local_opt_soln = new int[malloc_var_length];
 
 	large_weight_clauses = new int[malloc_clause_length];
-	soft_large_weight_clauses = new int[malloc_clause_length];
+//	soft_large_weight_clauses = new int[malloc_clause_length];
 	already_in_soft_large_weight_stack = new int[malloc_clause_length];
 
 	best_array = new int[malloc_var_length];
@@ -110,7 +109,7 @@ void Satlike::allocate_memory()
 void Satlike::free_memory()
 {
 	int i;
-	for (i = 0; i < num_clauses; i++)
+	for (i = 0; i < num_hclauses; i++)
 		delete[] clause_lit[i];
 
 	for (i = 1; i <= num_vars; ++i)
@@ -126,8 +125,6 @@ void Satlike::free_memory()
 	delete[] clause_true_lit_thres;
 
 	delete[] score;
-	delete[] oscore;
-	delete[] sscore;
 	delete[] var_neighbor;
 	delete[] var_neighbor_count;
 	delete[] time_stamp;
@@ -140,13 +137,10 @@ void Satlike::free_memory()
 	delete[] org_unit_weight;
 	delete[] sat_count;
 	delete[] sat_var;
-	delete[] clause_selected_count;
-	delete[] best_soft_clause;
+//	delete[] clause_selected_count;
 
 	delete[] hardunsat_stack;
 	delete[] index_in_hardunsat_stack;
-	delete[] softunsat_stack;
-	delete[] index_in_softunsat_stack;
 
 	delete[] unsatvar_stack;
 	delete[] index_in_unsatvar_stack;
@@ -161,7 +155,6 @@ void Satlike::free_memory()
 	delete[] local_opt_soln;
 
 	delete[] large_weight_clauses;
-	delete[] soft_large_weight_clauses;
 	delete[] already_in_soft_large_weight_stack;
 
 	delete[] best_array;
@@ -238,11 +231,11 @@ void Satlike::build_instance(char *filename)
 		line[i] = line2[i];
 	}
 	int read_items;
-	read_items = sscanf(line, "%s %s %d %d %lld", tempstr1, tempstr2, &num_vars, &num_clauses, &top_clause_weight);
-
+	read_items = sscanf(line, "%s %s %d %d %lld", tempstr1, tempstr2, &num_vars, &num_hclauses, &top_clause_weight);
+    num_clauses = num_hclauses;
 	allocate_memory();
 
-	for (c = 0; c < num_clauses; c++)
+	for (c = 0; c < num_hclauses; c++)
 	{
 		clause_lit_count[c] = 0;
 		clause_true_lit_thres[c] = 1;
@@ -256,13 +249,11 @@ void Satlike::build_instance(char *filename)
 		var_neighbor[v] = NULL;
 	}
 
-	num_hclauses = num_sclauses = 0;
 	unit_clause_count = 0;
 	//Now, read the clauses, one at a time.
 	int lit_redundent, clause_redundent;
 	int *temp_weight = new int[num_vars];
 	int cur_weight;
-	total_soft_weight = 0;
 
 	c = 0;
 	while (getline(infile, line2))
@@ -280,14 +271,6 @@ void Satlike::build_instance(char *filename)
 
 		iss >> org_clause_weight[c];
 		iss >> clause_true_lit_thres[c];
-
-		if (org_clause_weight[c] != top_clause_weight)
-		{
-			total_soft_weight += org_clause_weight[c];
-			num_sclauses++;
-		}
-		else
-			num_hclauses++;
 
 		iss >> cur_weight;
 		iss >> cur_lit;
@@ -365,7 +348,7 @@ void Satlike::build_instance(char *filename)
 		var_lit_count[v] = 0; //reset to 0, for build up the array
 	}
 	//scan all clauses to build up var literal arrays
-	for (c = 0; c < num_clauses; ++c)
+	for (c = 0; c < num_hclauses; ++c)
 	{
 		for (i = 0; i < clause_lit_count[c]; ++i)
 		{
@@ -378,9 +361,8 @@ void Satlike::build_instance(char *filename)
 		var_lit[v][var_lit_count[v]].clause_num = -1;
 
 	build_neighbor_relation();
-
 	best_soln_feasible = 0;
-	opt_unsat_weight = total_soft_weight + 1;
+
 }
 
 void Satlike::init(vector<int> &init_solution)
@@ -391,16 +373,16 @@ void Satlike::init(vector<int> &init_solution)
 	local_soln_feasible = 0;
 	local_opt_unsat_weight = top_clause_weight + 1;
 	large_weight_clauses_count = 0;
-	soft_large_weight_clauses_count = 0;
+    isSatisfiable = 0;
 
 	//consider:ave_soft_weight = total_soft_weight / num_sclauses;
 	ave_hard_weight = 0;
 	inc_hard_weight = 0;
 	//cout << "ave soft weight is " << ave_soft_weight << endl;
 	//Initialize clause information
-	for (c = 0; c < num_clauses; c++)
+	for (c = 0; c < num_hclauses; c++)
 	{
-		clause_selected_count[c] = 0;
+//		clause_selected_count[c] = 0;
 
 		//clause_weight[c] = clause_true_lit_thres[c];
 		org_unit_weight[c] = 1;
@@ -449,7 +431,7 @@ void Satlike::init(vector<int> &init_solution)
 	/* figure out sat_count, sat_var, soft_unsat_weight and init unsat_stack */
 	//soft_unsat_weight = 0;
 
-	for (c = 0; c < num_clauses; ++c)
+	for (c = 0; c < num_hclauses; ++c)
 	{
 		sat_count[c] = 0;
 		for (j = 0; j < clause_lit_count[c]; ++j)
@@ -463,8 +445,6 @@ void Satlike::init(vector<int> &init_solution)
 		}
 		if (sat_count[c] < clause_true_lit_thres[c])
 		{
-			if (org_clause_weight[c] != top_clause_weight)
-				soft_unsat_weight += (clause_true_lit_thres[c] - sat_count[c]) * org_unit_weight[c];
 			unsat(c);
 		}
 	}
@@ -574,7 +554,7 @@ int Satlike::pick_var()
 	}
 	else
 	{
-        printf("1. All of the constraints are satisfiable");
+        isSatisfiable = 1;
         return -1;
 	}
 	if ((rand() % MY_RAND_MAX_INT) * BASIC_SCALE < rwprob)
@@ -794,22 +774,22 @@ void Satlike::local_search(vector<int> &init_solution)
 	init(init_solution);
 	cout << "time is " << get_runtime() << endl;
 	cout << "hard unsat nb is " << hard_unsat_nb << endl;
-	cout << "soft unsat nb is " << soft_unsat_weight << endl;
+
 	cout << "goodvar nb is " << goodvar_stack_fill_pointer << endl;
 }
 
 void Satlike::print_best_solution()
 {
-	if (best_soln_feasible == 1)
-	{
-
-		if (verify_sol())
-			cout << opt_unsat_weight << '\t' << opt_time << '\t' << tries << '\t' << step << endl;
-		else
-			cout << "verify solion wrong " << endl;
-	}
-	else
-		cout << "no feasible solution" << endl;
+//	if (best_soln_feasible == 1)
+//	{
+//
+//		if (verify_sol())
+//			cout << opt_unsat_weight << '\t' << opt_time << '\t' << tries << '\t' << step << endl;
+//		else
+//			cout << "verify solion wrong " << endl;
+//	}
+//	else
+//		cout << "no feasible solution" << endl;
 
 	ofstream ofile("solution.res");
 	ofile << num_vars << " ";
@@ -823,14 +803,15 @@ void Satlike::print_best_solution()
 void Satlike::local_search_with_decimation(vector<int> &init_solution, char *inputfile)
 {
 	settings();
-	for (tries = 1; tries < max_tries; ++tries)
+	for (tries = 1; tries < max_tries && !isSatisfiable; ++tries)
 	{
 		init(init_solution);
-		for (step = 1; step < max_flips; ++step)
+
+		for (step = 1; step < max_flips && !isSatisfiable; ++step)
 		{
 			if (hard_unsat_nb == 0)
 			{
-                printf("2. is satisfiable\n");
+                isSatisfiable = 1;
 				return;
 			}
 			if (step % 1000 == 0)
@@ -842,7 +823,6 @@ void Satlike::local_search_with_decimation(vector<int> &init_solution, char *inp
 				}
 			}
 			int flipvar = pick_var();
-
 			flip(flipvar);
 			//check_new_score();
 			time_stamp[flipvar] = step;
@@ -854,7 +834,6 @@ void Satlike::check_softunsat_weight()
 {
 	int c, j, flag;
 	long long verify_unsat_weight = 0;
-
 	for (c = 0; c < num_clauses; ++c)
 	{
 		flag = 0;
@@ -882,11 +861,11 @@ void Satlike::check_softunsat_weight()
 		}
 	}
 
-	if (verify_unsat_weight != soft_unsat_weight)
-	{
-		cout << step << endl;
-		cout << "verify unsat weight is" << verify_unsat_weight << " and soft unsat weight is " << soft_unsat_weight << endl;
-	}
+//	if (verify_unsat_weight != soft_unsat_weight)
+//	{
+//		cout << step << endl;
+//		cout << "verify unsat weight is" << verify_unsat_weight << " and soft unsat weight is " << soft_unsat_weight << endl;
+//	}
 	//return 0;
 }
 
@@ -933,7 +912,6 @@ bool Satlike::verify_sol()
 
 		}
 	}
-
 	if (verify_unsat_weight == opt_unsat_weight)
 		return 1;
 	else
@@ -1112,12 +1090,12 @@ inline void Satlike::unsat(int clause)
 		mypush(clause, hardunsat_stack);
 		hard_unsat_nb++;
 	}
-	else
-	{
-		index_in_softunsat_stack[clause] = softunsat_stack_fill_pointer;
-		mypush(clause, softunsat_stack);
-		//soft_unsat_weight += org_clause_weight[clause];
-	}
+//	else
+//	{
+//		index_in_softunsat_stack[clause] = softunsat_stack_fill_pointer;
+//		mypush(clause, softunsat_stack);
+//		//soft_unsat_weight += org_clause_weight[clause];
+//	}
 }
 
 inline void Satlike::sat(int clause)
@@ -1134,15 +1112,15 @@ inline void Satlike::sat(int clause)
 
 		hard_unsat_nb--;
 	}
-	else
-	{
-		last_unsat_clause = mypop(softunsat_stack);
-		index = index_in_softunsat_stack[clause];
-		softunsat_stack[index] = last_unsat_clause;
-		index_in_softunsat_stack[last_unsat_clause] = index;
-
-		//soft_unsat_weight -= org_clause_weight[clause];
-	}
+//	else
+//	{
+//		last_unsat_clause = mypop(softunsat_stack);
+//		index = index_in_softunsat_stack[clause];
+//		softunsat_stack[index] = last_unsat_clause;
+//		index_in_softunsat_stack[last_unsat_clause] = index;
+//
+//		//soft_unsat_weight -= org_clause_weight[clause];
+//	}
 }
 
 void Satlike::check_new_score()
@@ -1199,7 +1177,7 @@ void Satlike::check_new_score()
 				}
 			}
 		}
-		if (tem_score != score[v] || tem_sscore != sscore[v])
+		if (tem_score != score[v])
 		{
 
 			cout << "score is worng in variable " << v << endl;
@@ -1230,11 +1208,11 @@ void Satlike::check_new_score()
 			tem_unsat_softweight += (clause_true_lit_thres[i] - sat_count[i]);
 		}
 	}
-	if (tem_unsat_softweight != soft_unsat_weight)
-	{
-		cout << "verify softunsat weight wrong " << endl;
-		exit(0);
-	}
+//	if (tem_unsat_softweight != soft_unsat_weight)
+//	{
+//		cout << "verify softunsat weight wrong " << endl;
+//		exit(0);
+//	}
 }
 
 #endif

@@ -55,9 +55,9 @@ public:
 
 	//size of the instance
 	int num_vars;		 //var index from 1 to num_vars
-	int num_clauses; //clause index from 0 to num_clauses-1
-	int num_hclauses;
-	int num_sclauses;
+	int num_clauses;
+	int num_hclauses;    //clause index from 0 to num_clauses-1
+//	int num_sclauses;
 
 	//steps and time
 	int tries;
@@ -87,8 +87,8 @@ public:
 
 	/* Information about the variables. */
 	long long *score;
-	long long *sscore;
-	long long *oscore;
+//	long long *sscore;
+//	long long *oscore;
 	long long *time_stamp;
 	int **var_neighbor;
 	int *var_neighbor_count;
@@ -101,14 +101,14 @@ public:
 	long long *clause_weight;
 	long long *unit_weight;
 	long long *org_unit_weight;
-	long long ave_soft_weight;
+//	long long ave_soft_weight;
 	long long ave_hard_weight;
 	long long inc_hard_weight;
 
 	int *sat_count;
 	int *sat_var;
 	long long *clause_selected_count;
-	int *best_soft_clause;
+//	int *best_soft_clause;
 
 	//original unit clause stack
 	lit *unit_clause;
@@ -119,9 +119,9 @@ public:
 	int *index_in_hardunsat_stack; //which position is a clause in the unsat_stack
 	int hardunsat_stack_fill_pointer;
 
-	int *softunsat_stack;					 //store the unsat clause number
-	int *index_in_softunsat_stack; //which position is a clause in the unsat_stack
-	int softunsat_stack_fill_pointer;
+//	int *softunsat_stack;					 //store the unsat clause number
+//	int *index_in_softunsat_stack; //which position is a clause in the unsat_stack
+//	int softunsat_stack_fill_pointer;
 
 	//variables in unsat clauses
 	int *unsatvar_stack;
@@ -141,7 +141,7 @@ public:
 	int best_soln_feasible; //when find a feasible solution, this is marked as 1.
 	int local_soln_feasible;
 	int hard_unsat_nb;
-	long long soft_unsat_weight;
+//	long long soft_unsat_weight;
 	long long opt_unsat_weight;
 	long long local_opt_unsat_weight;
 
@@ -150,10 +150,10 @@ public:
 	int large_weight_clauses_count;
 	int large_clause_count_threshold;
 
-	int *soft_large_weight_clauses;
+//	int *soft_large_weight_clauses;
 	int *already_in_soft_large_weight_stack;
-	int soft_large_weight_clauses_count;
-	int soft_large_clause_count_threshold;
+//	int soft_large_weight_clauses_count;
+//	int soft_large_clause_count_threshold;
 
 	//tem data structure used in algorithm
 	int *best_array;
@@ -166,7 +166,8 @@ public:
 	float smooth_probability;
 	int hd_count_threshold;
 	int h_inc;
-	int softclause_weight_threshold;
+	bool isSatisfiable;
+//	int softclause_weight_threshold;
 
 	//function used in algorithm
 	void build_neighbor_relation();
