@@ -99,7 +99,7 @@ void Satlike::allocate_memory()
 	local_opt_soln = new int[malloc_var_length];
 
 	large_weight_clauses = new int[malloc_clause_length];
-//	soft_large_weight_clauses = new int[malloc_clause_length];
+
 	already_in_soft_large_weight_stack = new int[malloc_clause_length];
 
 	best_array = new int[malloc_var_length];
