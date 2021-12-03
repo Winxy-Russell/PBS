@@ -46,6 +46,7 @@ int main()
 //    //s.simple_print();
     cout<<(s.isSatisfiable?"Satisfiable":"Not satisfiable")<<endl;
     s.print_best_solution();
+    s.verify_sol();
     s.free_memory();
     cout<<1<<" "<<endl;
     return 0;

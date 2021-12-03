@@ -95,7 +95,7 @@ void Satlike::allocate_memory()
 	already_in_goodvar_stack = new int[malloc_var_length];
 
 	cur_soln = new int[malloc_var_length];
-	best_soln = new int[malloc_var_length];
+
 	local_opt_soln = new int[malloc_var_length];
 
 	large_weight_clauses = new int[malloc_clause_length];
@@ -151,7 +151,7 @@ void Satlike::free_memory()
 
 	//delete [] fix;
 	delete[] cur_soln;
-	delete[] best_soln;
+
 	delete[] local_opt_soln;
 
 	delete[] large_weight_clauses;
@@ -795,7 +795,7 @@ void Satlike::print_best_solution()
 	ofile << num_vars << " ";
 	for (int i = 1; i <= num_vars; i++)
 	{
-		ofile << best_soln[i] << " ";
+		ofile << cur_soln[i] << " ";
 	}
 	ofile << endl;
 }
@@ -872,7 +872,6 @@ void Satlike::check_softunsat_weight()
 bool Satlike::verify_sol()
 {
 	int c, j, flag;
-	long long verify_unsat_weight = 0;
 
 	for (c = 0; c < num_clauses; ++c)
 	{
@@ -880,7 +879,7 @@ bool Satlike::verify_sol()
 		int tem_clause_true_lit_count = 0;
 		for (j = 0; j < clause_lit_count[c]; ++j)
 		{
-			if (best_soln[clause_lit[c][j].var_num] == clause_lit[c][j].sense)
+			if (cur_soln[clause_lit[c][j].var_num] == clause_lit[c][j].sense)
 			{
 				tem_clause_true_lit_count += clause_lit[c][j].weight;
 			}
@@ -890,8 +889,7 @@ bool Satlike::verify_sol()
 
 		if (flag == 0)
 		{
-			if (org_clause_weight[c] == top_clause_weight) //verify hard clauses
-			{
+
 				//output the clause unsatisfied by the solution
 				cout << "c Error: hard clause " << c << " is not satisfied" << endl;
 
@@ -905,20 +903,20 @@ bool Satlike::verify_sol()
 				cout << endl;
 				cout << "c ";
 				for (j = 0; j < clause_lit_count[c]; ++j)
-					cout << best_soln[clause_lit[c][j].var_num] << " ";
-				cout << endl;
-				return 0;
-			}
+					cout << cur_soln[clause_lit[c][j].var_num] << " ";
 
+				cout << endl;
+				//return 0;
 		}
 	}
-	if (verify_unsat_weight == opt_unsat_weight)
-		return 1;
-	else
-	{
-		cout << "c Error: find opt=" << opt_unsat_weight << ", but verified opt=" << verify_unsat_weight << endl;
-	}
-	return 0;
+	return flag;
+//	if (verify_unsat_weight == opt_unsat_weight)
+//		return 1;
+//	else
+//	{
+//		cout << "c Error: find opt=" << opt_unsat_weight << ", but verified opt=" << verify_unsat_weight << endl;
+//	}
+//	return 0;
 }
 
 void Satlike::simple_print()

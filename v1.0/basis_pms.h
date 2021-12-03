@@ -136,7 +136,7 @@ public:
 
 	/* Information about solution */
 	int *cur_soln; //the current solution, with 1's for True variables, and 0's for False variables
-	int *best_soln;
+
 	int *local_opt_soln;
 	int best_soln_feasible; //when find a feasible solution, this is marked as 1.
 	int local_soln_feasible;
