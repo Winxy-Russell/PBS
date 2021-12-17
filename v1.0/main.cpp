@@ -2,33 +2,29 @@
 #include "pms.h"
 #include <sstream>
 #include <iostream>
+#include <dirent.h>
 
-//int main(int argc, char *argv[])
-//{
-//    srand((unsigned)time(NULL));
-//    start_timing();
-//    Satlike s;
-//    stringstream ss;
-//    ss.str(argv[2]);
-//    int cutoff;
-//    ss>>cutoff;
-//    s.cutoff_time = cutoff;
-//    //cout<<s.cutoff_time<<endl;
-//
-//    vector<int> init_solution;
-//    s.build_instance(argv[1]);
-//
-//    s.local_search_with_decimation(init_solution, argv[1]);
-//
-//    //s.simple_print();
-//    s.print_best_solution();
-//    s.free_memory();
-//    cout<<1<<" "<<endl;
-//    return 0;
-//}
+void getFiles(string path, vector<string>& filenames)
+{
+    DIR *pDir;
+    struct dirent* ptr;
+    if(!(pDir = opendir(path.c_str()))){
+        cout<<"Folder doesn't Exist!"<<endl;
+        return;
+    }
+    while((ptr = readdir(pDir))!=0) {
+        if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0){
+            filenames.push_back(path + "/" + ptr->d_name);
+        }
+    }
+    closedir(pDir);
+}
+
 int main()
 {
-
+    vector<string> files;
+    string path = "";
+    getFiles(path, files);
     srand((unsigned)time(NULL));
     start_timing();
     Satlike s;
@@ -37,17 +33,21 @@ int main()
     //cout<<s.cutoff_time<<endl;
     vector<int> init_solution;
 
-    char filename[1024] = "100-1.opb.wecnf";
 
-    s.build_instance(filename);
+    for(auto& it:files){
+        char filename[1024];
+        strcpy(filename, it.c_str());
+        s.build_instance(filename);
 
-    s.local_search_with_decimation(init_solution, filename);
+        s.local_search_with_decimation(init_solution, filename);
 
 //    //s.simple_print();
-    cout<<(s.isSatisfiable?"Satisfiable":"Not satisfiable")<<endl;
-    s.print_best_solution();
-    s.verify_sol();
-    s.free_memory();
-    cout<<1<<" "<<endl;
+        cout<<(s.isSatisfiable?"Satisfiable":"Not satisfiable")<<endl;
+        s.print_best_solution();
+        s.verify_sol();
+        s.free_memory();
+        cout<<1<<" "<<endl;
+    }
+
     return 0;
 }
